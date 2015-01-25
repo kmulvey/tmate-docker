@@ -1,7 +1,9 @@
 tmate-docker
 ============
 
-Tmate.io docker server
+##Tmate.io docker server
+####This is a fork of [nicopace/tmate-docker](https://github.com/nicopace/tmate-docker)
+
 
 Run it as a priviledged image, as tmate requires some special capabilitites: CLONE_NEWIPC and CLONE_NEWNET
 
