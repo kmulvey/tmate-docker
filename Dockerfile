@@ -1,5 +1,4 @@
-FROM phusion/baseimage:0.9.13
-MANTAINER Nicolas Pace <nicolas.pace@unixono.com.ar>
+FROM fedora
 
 # Set correct environment variables.
 ENV HOME /root
@@ -7,25 +6,32 @@ ENV HOME /root
 # Regenerate SSH host keys. baseimage-docker does not contain any, so you
 # have to do that yourself. You may also comment out this instruction; the
 # init system will auto-generate one during boot.
-RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
+#RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 
 # Use baseimage-docker's init system.
-CMD ["/sbin/my_init"]
+#CMD ["/sbin/my_init"]
 
-RUN apt-get update && \
-    apt-get -y install git-core build-essential pkg-config libtool libevent-dev libncurses-dev zlib1g-dev automake libssh-dev cmake ruby && \
-    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN yum clean all
+RUN yum makecache
+RUN yum update -y 
+RUN yum -y group install 'C Development Tools and Libraries'
+RUN yum -y install git-core libtool libevent-devel ncurses-devel zlib-devel automake libssh2-devel cmake ruby
+RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN mkdir -p /opt/code/tmate-slave
 
-RUN git clone https://github.com/nviennot/tmate-slave.git
+COPY . /opt/code/tmate-slave
+WORKDIR /opt/code/tmate-slave
 
-RUN cd tmate-slave && \
-    ./create_keys.sh && \
-    ./autogen.sh && \
-    ./configure && \
-     make
+RUN ./create_keys.sh && \
+		./autogen.sh && \
+		./configure && \
+		make
 
-RUN mkdir /etc/service/tmate-slave
-ADD tmate-slave.sh /etc/service/tmate-slave/run
+RUN ./message.sh
 
-RUN mkdir -p /etc/my_init.d
-ADD message.sh /etc/my_init.d/message.sh
+CMD ["./tmate-slave", "-p 2222"]
+#RUN mkdir /etc/service/tmate-slave
+#ADD tmate-slave.sh /etc/service/tmate-slave/run
+
+#RUN mkdir -p /etc/my_init.d
+#ADD message.sh /etc/my_init.d/message.sh
